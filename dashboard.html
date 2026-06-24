@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Panel | DOBLECERO</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/auth.css" />
+</head>
+<body class="dashboard-body">
+  <header class="site-header compact">
+    <a class="brand" href="index.html">
+      <span>DOBLECERO</span>
+    </a>
+    <nav class="site-nav open">
+      <a href="index.html">Inicio</a>
+      <a href="index.html#servicios">Servicios</a>
+      <a href="appointment.html" data-artist-only>Reservar turno</a>
+      <button class="nav-cta as-button" type="button" data-logout>Cerrar sesion</button>
+    </nav>
+  </header>
+
+  <main class="dashboard">
+    <section class="dashboard-hero">
+      <p class="eyebrow">Panel privado</p>
+      <h1 data-user-name>Cargando perfil...</h1>
+      <p data-welcome>Validando sesion con Firebase Authentication.</p>
+    </section>
+
+    <section class="profile-grid">
+      <article class="profile-card">
+        <span>Nombre</span>
+        <strong data-profile-name>-</strong>
+      </article>
+      <article class="profile-card">
+        <span>Email</span>
+        <strong data-profile-email>-</strong>
+      </article>
+      <article class="profile-card">
+        <span>Rol</span>
+        <strong data-profile-role>-</strong>
+      </article>
+    </section>
+
+    <section class="panel-section" data-artist-panel hidden>
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">Artista / Cliente</p>
+          <h2>Mis turnos</h2>
+        </div>
+        <a class="button primary" href="appointment.html" data-artist-only>Reservar turno</a>
+      </div>
+      <div class="appointments-list" data-artist-appointments>
+        <p class="empty-state">Cargando tus turnos...</p>
+      </div>
+    </section>
+
+    <section class="panel-section" data-producer-panel hidden>
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">Productor / Administrador</p>
+          <h2>Turnos del estudio</h2>
+        </div>
+      </div>
+      <div class="appointments-list admin" data-producer-appointments>
+        <p class="empty-state">Cargando turnos...</p>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="js/auth.js"></script>
+  <script type="module" src="js/appointments.js"></script>
+</body>
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Iniciar sesion | DOBLECERO</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/auth.css" />
+</head>
+<body class="auth-body">
+  <main class="auth-shell">
+    <a class="auth-brand" href="index.html">
+      <span>DOBLECERO</span>
+    </a>
+
+    <section class="auth-card">
+      <div class="auth-intro">
+        <p class="eyebrow">Acceso privado</p>
+        <h1>Iniciar sesion</h1>
+        <p>Accede a tu perfil y deja tu proxima sesion lista para avanzar.</p>
+      </div>
+
+      <form class="auth-form" id="loginForm" novalidate>
+        <div class="form-alert" data-form-alert hidden></div>
+
+        <label class="field">
+          <span>Email</span>
+          <input type="email" name="email" autocomplete="email" placeholder="tu@email.com" required />
+          <small data-error-for="email"></small>
+        </label>
+
+        <label class="field">
+          <span>Contrasena</span>
+          <input type="password" name="password" autocomplete="current-password" placeholder="Minimo 6 caracteres" required />
+          <small data-error-for="password"></small>
+        </label>
+
+        <button class="button primary full" type="submit" data-submit-button>Entrar</button>
+      </form>
+
+      <p class="auth-switch">No tienes cuenta? <a href="register.html">Registrarse</a></p>
+      <a class="back-link" href="index.html">Volver al inicio</a>
+    </section>
+  </main>
+
+  <script type="module" src="js/auth.js"></script>
+</body>
+</html>

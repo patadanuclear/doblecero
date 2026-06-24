@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reservar turno | DOBLECERO</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/auth.css" />
+</head>
+<body class="auth-body">
+  <main class="auth-shell">
+    <a class="auth-brand" href="index.html">
+      <span>DOBLECERO</span>
+    </a>
+
+    <section class="auth-card wide appointment-card">
+      <div class="auth-intro">
+        <p class="eyebrow">Reservas</p>
+        <h1>Reservar turno</h1>
+        <p>Elegi el servicio, fecha y detalles del proyecto. Si no tenes sesion iniciada, te mandamos al login.</p>
+      </div>
+
+      <form class="auth-form two-cols" id="appointmentForm" novalidate>
+        <div class="form-alert" data-form-alert hidden></div>
+
+        <label class="field">
+          <span>Servicio</span>
+          <select name="service" required>
+            <option value="">Elegir servicio</option>
+            <option value="Grabacion">Grabacion</option>
+            <option value="Mixing">Mixing</option>
+            <option value="Mastering">Mastering</option>
+            <option value="Vocal Chain">Vocal Chain</option>
+            <option value="Otro">Otro</option>
+          </select>
+          <small data-error-for="service"></small>
+        </label>
+
+        <label class="field">
+          <span>Nombre artistico / cliente</span>
+          <input type="text" name="artistName" placeholder="Nombre artistico o cliente" required />
+          <small data-error-for="artistName"></small>
+        </label>
+
+        <label class="field">
+          <span>Fecha</span>
+          <input type="date" name="date" required />
+          <small data-error-for="date"></small>
+        </label>
+
+        <label class="field">
+          <span>Horario</span>
+          <input type="time" name="time" required />
+          <small data-error-for="time"></small>
+        </label>
+
+        <label class="field full-field">
+          <span>Observaciones</span>
+          <textarea name="notes" rows="5" placeholder="Contanos referencias, cantidad de temas, estilo, urgencia o detalles importantes."></textarea>
+          <small data-error-for="notes"></small>
+        </label>
+
+        <button class="button primary full" type="submit" data-submit-button>Guardar turno</button>
+      </form>
+
+      <a class="back-link" href="dashboard.html">Volver al panel</a>
+    </section>
+  </main>
+
+  <script type="module" src="js/auth.js"></script>
+  <script type="module" src="js/appointments.js"></script>
+</body>
+</html>

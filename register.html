@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Registrarse | DOBLECERO</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/auth.css" />
+</head>
+<body class="auth-body">
+  <main class="auth-shell">
+    <a class="auth-brand" href="index.html">
+      <span>DOBLECERO</span>
+    </a>
+
+    <section class="auth-card wide">
+      <div class="auth-intro">
+        <p class="eyebrow">Nuevo perfil</p>
+        <h1>Crear cuenta</h1>
+        <p>Elegi tu rol para que DOBLECERO organice artistas, clientes y perfiles profesionales desde el comienzo.</p>
+      </div>
+
+      <form class="auth-form two-cols" id="registerForm" novalidate>
+        <div class="form-alert" data-form-alert hidden></div>
+
+        <label class="field">
+          <span>Nombre</span>
+          <input type="text" name="name" autocomplete="name" placeholder="Tu nombre artistico o real" required />
+          <small data-error-for="name"></small>
+        </label>
+
+        <label class="field">
+          <span>Email</span>
+          <input type="email" name="email" autocomplete="email" placeholder="tu@email.com" required />
+          <small data-error-for="email"></small>
+        </label>
+
+        <label class="field">
+          <span>Contrasena</span>
+          <input type="password" name="password" autocomplete="new-password" placeholder="Minimo 6 caracteres" required />
+          <small data-error-for="password"></small>
+        </label>
+
+        <label class="field">
+          <span>Confirmar contrasena</span>
+          <input type="password" name="confirmPassword" autocomplete="new-password" placeholder="Repeti tu contrasena" required />
+          <small data-error-for="confirmPassword"></small>
+        </label>
+
+        <fieldset class="role-select">
+          <legend>Rol</legend>
+          <label>
+            <input type="radio" name="role" value="artist" />
+            <span>Artista / Cliente</span>
+          </label>
+          <label>
+            <input type="radio" name="role" value="producer" />
+            <span>Productor / Administrador</span>
+          </label>
+          <small data-error-for="role"></small>
+        </fieldset>
+
+        <button class="button primary full" type="submit" data-submit-button>Crear cuenta</button>
+      </form>
+
+      <p class="auth-switch">Ya tienes cuenta? <a href="login.html">Iniciar sesion</a></p>
+      <a class="back-link" href="index.html">Volver al inicio</a>
+    </section>
+  </main>
+
+  <script type="module" src="js/auth.js"></script>
+</body>
+</html>
