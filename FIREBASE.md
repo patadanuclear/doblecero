@@ -12,6 +12,7 @@ Colecciones usadas:
 
 - `users`
 - `appointments`
+- `appointmentSlots`
 
 Reglas simples para probar:
 
@@ -41,6 +42,12 @@ service cloud.firestore {
       allow read: if signedIn() && (resource.data.userId == request.auth.uid || isProducer());
       allow update: if isProducer();
       allow delete: if isProducer();
+    }
+
+    match /appointmentSlots/{slotId} {
+      allow read: if signedIn();
+      allow create: if signedIn() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isProducer();
     }
   }
 }
@@ -74,5 +81,17 @@ service cloud.firestore {
   "status": "pendiente",
   "createdAt": "serverTimestamp",
   "updatedAt": "serverTimestamp"
+}
+```
+
+`appointmentSlots/{fecha_hora}` guarda solo la disponibilidad del horario:
+
+```json
+{
+  "appointmentId": "id-del-turno",
+  "userId": "id-del-usuario",
+  "date": "2026-06-23",
+  "time": "18:00",
+  "createdAt": "serverTimestamp"
 }
 ```

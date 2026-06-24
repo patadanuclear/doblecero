@@ -1,16 +1,16 @@
 import { auth, db, hasFirebaseConfig } from "./firebase-config.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
 import {
-  addDoc,
   collection,
   deleteDoc,
   doc,
   getDoc,
   getDocs,
+  query,
+  runTransaction,
   serverTimestamp,
   updateDoc,
-  where,
-  query
+  where
 } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
 
 const page = window.location.pathname.split("/").pop() || "index.html";
@@ -22,10 +22,6 @@ const producerList = document.querySelector("[data-producer-appointments]");
 const isFileProtocol = window.location.protocol === "file:";
 
 const statusOptions = ["pendiente", "confirmado", "cancelado", "completado"];
-
-function roleLabel(role) {
-  return role === "producer" ? "Productor / Administrador" : "Artista / Cliente";
-}
 
 function normalizeRole(role) {
   const normalized = String(role || "").toLowerCase();
@@ -73,10 +69,18 @@ function setLoading(form, isLoading, label) {
 function firebaseErrorMessage(error) {
   const messages = {
     "permission-denied": "Firestore rechazo la operacion. Revisa las reglas de users y appointments.",
-    "unavailable": "Firebase no respondio. Proba de nuevo en unos minutos.",
+    unavailable: "Firebase no respondio. Proba de nuevo en unos minutos.",
     "not-found": "Firestore no esta creado o no esta disponible."
   };
   return messages[error?.code] || error?.message || "No se pudo completar la operacion.";
+}
+
+function isAllowedBookingTime(time) {
+  const [hour, minute] = String(time).split(":").map(Number);
+  if (Number.isNaN(hour) || Number.isNaN(minute)) return false;
+
+  const totalMinutes = hour * 60 + minute;
+  return totalMinutes >= 16 * 60 || totalMinutes <= 6 * 60;
 }
 
 function validateAppointment(form) {
@@ -85,22 +89,25 @@ function validateAppointment(form) {
   let valid = true;
 
   if (!data.service) {
-    showFieldError(form, "service", "Elegí un servicio.");
+    showFieldError(form, "service", "Elegi un servicio.");
     valid = false;
   }
 
   if (!data.artistName || data.artistName.trim().length < 2) {
-    showFieldError(form, "artistName", "Ingresá un nombre de al menos 2 caracteres.");
+    showFieldError(form, "artistName", "Ingresa un nombre de al menos 2 caracteres.");
     valid = false;
   }
 
   if (!data.date) {
-    showFieldError(form, "date", "Elegí una fecha.");
+    showFieldError(form, "date", "Elegi una fecha.");
     valid = false;
   }
 
   if (!data.time) {
-    showFieldError(form, "time", "Elegí un horario.");
+    showFieldError(form, "time", "Elegi un horario.");
+    valid = false;
+  } else if (!isAllowedBookingTime(data.time)) {
+    showFieldError(form, "time", "Solo se puede reservar entre las 16:00 y las 06:00.");
     valid = false;
   }
 
@@ -120,6 +127,10 @@ async function getUserProfile(user) {
   return { ...profile, role: normalizeRole(profile.role) };
 }
 
+function slotIdFor(date, time) {
+  return `${date}_${String(time).replace(":", "")}`;
+}
+
 function normalizeAppointments(snapshot) {
   return snapshot.docs
     .map((item) => ({ id: item.id, ...item.data() }))
@@ -129,6 +140,7 @@ function normalizeAppointments(snapshot) {
 function appointmentCard(appointment, mode) {
   const article = document.createElement("article");
   article.className = "appointment-item";
+  article.dataset.slotId = slotIdFor(appointment.date || "", appointment.time || "");
 
   const statusMarkup = mode === "producer"
     ? `<select class="status-select" data-status-id="${appointment.id}" aria-label="Cambiar estado">
@@ -158,13 +170,19 @@ function renderAppointments(container, appointments, mode) {
   container.innerHTML = "";
 
   if (!appointments.length) {
-    container.innerHTML = `<p class="empty-state">Todavía no hay turnos cargados.</p>`;
+    container.innerHTML = `<p class="empty-state">Todavia no hay turnos cargados.</p>`;
     return;
   }
 
   appointments.forEach((appointment) => {
     container.appendChild(appointmentCard(appointment, mode));
   });
+}
+
+async function releaseSlotFromSelect(select) {
+  const slotId = select.closest(".appointment-item")?.dataset.slotId;
+  if (!slotId) return;
+  await deleteDoc(doc(db, "appointmentSlots", slotId));
 }
 
 async function loadArtistAppointments(user) {
@@ -227,19 +245,38 @@ if (appointmentForm && hasFirebaseConfig && !isFileProtocol) {
 
       try {
         setLoading(appointmentForm, true, "Guardar turno");
-        await addDoc(collection(db, "appointments"), {
-          userId: user.uid,
-          userName: profile.name || user.displayName || data.artistName.trim(),
-          userEmail: profile.email || user.email || "",
-          role: profile.role || "artist",
-          service: data.service,
-          artistName: data.artistName.trim(),
-          date: data.date,
-          time: data.time,
-          notes: data.notes?.trim() || "",
-          status: "pendiente",
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp()
+
+        await runTransaction(db, async (transaction) => {
+          const appointmentRef = doc(collection(db, "appointments"));
+          const slotRef = doc(db, "appointmentSlots", slotIdFor(data.date, data.time));
+          const slotSnapshot = await transaction.get(slotRef);
+
+          if (slotSnapshot.exists()) {
+            throw new Error("slot-taken");
+          }
+
+          transaction.set(appointmentRef, {
+            userId: user.uid,
+            userName: profile.name || user.displayName || data.artistName.trim(),
+            userEmail: profile.email || user.email || "",
+            role: profile.role || "artist",
+            service: data.service,
+            artistName: data.artistName.trim(),
+            date: data.date,
+            time: data.time,
+            notes: data.notes?.trim() || "",
+            status: "pendiente",
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp()
+          });
+
+          transaction.set(slotRef, {
+            appointmentId: appointmentRef.id,
+            userId: user.uid,
+            date: data.date,
+            time: data.time,
+            createdAt: serverTimestamp()
+          });
         });
 
         setAlert(appointmentForm, "Turno guardado. Redirigiendo al panel...", "success");
@@ -247,6 +284,11 @@ if (appointmentForm && hasFirebaseConfig && !isFileProtocol) {
           window.location.href = "dashboard.html";
         }, 700);
       } catch (error) {
+        if (error.message === "slot-taken") {
+          showFieldError(appointmentForm, "time", "Ese dia y horario ya estan ocupados. Elegi otro turno.");
+          setAlert(appointmentForm, "Ese turno ya esta reservado por otra persona.");
+          return;
+        }
         setAlert(appointmentForm, firebaseErrorMessage(error));
       } finally {
         setLoading(appointmentForm, false, "Guardar turno");
@@ -282,10 +324,11 @@ producerList?.addEventListener("change", async (event) => {
 
     if (select.value === "completado") {
       await deleteDoc(doc(db, "appointments", select.dataset.statusId));
+      await releaseSlotFromSelect(select);
       select.closest(".appointment-item")?.remove();
 
       if (producerList && !producerList.querySelector(".appointment-item")) {
-        producerList.innerHTML = `<p class="empty-state">Todavía no hay turnos cargados.</p>`;
+        producerList.innerHTML = `<p class="empty-state">Todavia no hay turnos cargados.</p>`;
       }
       return;
     }
@@ -294,6 +337,10 @@ producerList?.addEventListener("change", async (event) => {
       status: select.value,
       updatedAt: serverTimestamp()
     });
+
+    if (select.value === "cancelado") {
+      await releaseSlotFromSelect(select);
+    }
   } catch (error) {
     window.alert(firebaseErrorMessage(error));
   } finally {
