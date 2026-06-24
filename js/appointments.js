@@ -39,7 +39,7 @@ function setAlert(form, message, type = "error") {
 
 function clearErrors(form) {
   form.querySelectorAll("[data-error-for]").forEach((slot) => {
-    slot.textContent = "";
+    slot.textContent = slot.dataset.hint || "";
   });
   form.querySelectorAll(".has-error").forEach((field) => {
     field.classList.remove("has-error");
@@ -75,12 +75,33 @@ function firebaseErrorMessage(error) {
   return messages[error?.code] || error?.message || "No se pudo completar la operacion.";
 }
 
+function localDateValue(date = new Date()) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
 function isAllowedBookingTime(time) {
+  if (!/^\d{2}:\d{2}$/.test(String(time))) return false;
   const [hour, minute] = String(time).split(":").map(Number);
   if (Number.isNaN(hour) || Number.isNaN(minute)) return false;
+  if (hour < 0 || hour > 23 || minute < 0 || minute > 59) return false;
+  if (minute !== 0 && minute !== 30) return false;
 
   const totalMinutes = hour * 60 + minute;
   return totalMinutes >= 16 * 60 || totalMinutes <= 6 * 60;
+}
+
+function isPastAppointment(date, time) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(date))) return false;
+  if (!/^\d{2}:\d{2}$/.test(String(time))) return false;
+
+  const [year, month, day] = String(date).split("-").map(Number);
+  const [hour, minute] = String(time).split(":").map(Number);
+  const appointmentDate = new Date(year, month - 1, day, hour, minute);
+
+  return appointmentDate.getTime() <= Date.now();
 }
 
 function validateAppointment(form) {
@@ -101,17 +122,29 @@ function validateAppointment(form) {
   if (!data.date) {
     showFieldError(form, "date", "Elegi una fecha.");
     valid = false;
+  } else if (data.date < localDateValue()) {
+    showFieldError(form, "date", "No podes reservar una fecha que ya paso.");
+    valid = false;
   }
 
   if (!data.time) {
     showFieldError(form, "time", "Elegi un horario.");
     valid = false;
   } else if (!isAllowedBookingTime(data.time)) {
-    showFieldError(form, "time", "Solo se puede reservar entre las 16:00 y las 06:00.");
+    showFieldError(form, "time", "Elegi un horario disponible entre las 16:00 y las 06:00.");
+    valid = false;
+  } else if (data.date && isPastAppointment(data.date, data.time)) {
+    showFieldError(form, "time", "No podes reservar un horario que ya paso.");
     valid = false;
   }
 
   return valid ? data : null;
+}
+
+function setupAppointmentDateLimit(form) {
+  const dateInput = form?.querySelector('[name="date"]');
+  if (!dateInput) return;
+  dateInput.min = localDateValue();
 }
 
 async function getUserProfile(user) {
@@ -215,6 +248,8 @@ if ((page === "appointment.html" || page === "dashboard.html") && (!hasFirebaseC
 }
 
 if (appointmentForm && hasFirebaseConfig && !isFileProtocol) {
+  setupAppointmentDateLimit(appointmentForm);
+
   onAuthStateChanged(auth, async (user) => {
     if (!user) {
       window.location.href = "login.html";

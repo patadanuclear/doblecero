@@ -51,8 +51,39 @@
 
         <label class="field">
           <span>Horario</span>
-          <input type="time" name="time" required />
-          <small data-error-for="time">Horarios disponibles: 16:00 a 06:00.</small>
+          <select name="time" required>
+            <option value="">Elegir horario</option>
+            <option value="16:00">16:00</option>
+            <option value="16:30">16:30</option>
+            <option value="17:00">17:00</option>
+            <option value="17:30">17:30</option>
+            <option value="18:00">18:00</option>
+            <option value="18:30">18:30</option>
+            <option value="19:00">19:00</option>
+            <option value="19:30">19:30</option>
+            <option value="20:00">20:00</option>
+            <option value="20:30">20:30</option>
+            <option value="21:00">21:00</option>
+            <option value="21:30">21:30</option>
+            <option value="22:00">22:00</option>
+            <option value="22:30">22:30</option>
+            <option value="23:00">23:00</option>
+            <option value="23:30">23:30</option>
+            <option value="00:00">00:00</option>
+            <option value="00:30">00:30</option>
+            <option value="01:00">01:00</option>
+            <option value="01:30">01:30</option>
+            <option value="02:00">02:00</option>
+            <option value="02:30">02:30</option>
+            <option value="03:00">03:00</option>
+            <option value="03:30">03:30</option>
+            <option value="04:00">04:00</option>
+            <option value="04:30">04:30</option>
+            <option value="05:00">05:00</option>
+            <option value="05:30">05:30</option>
+            <option value="06:00">06:00</option>
+          </select>
+          <small data-error-for="time" data-hint="Horarios disponibles: 16:00 a 06:00.">Horarios disponibles: 16:00 a 06:00.</small>
         </label>
 
         <label class="field full-field">
